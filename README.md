@@ -17,3 +17,10 @@ If you are developing a production application, we recommend using TypeScript wi
 
 
 cmd:npm create vite@latest expense-react-client
+
+
+ui-compoent :https://ayroui.com/bootstrap-components/signin-signup
+
+
+aximos :npm install axios
+cors :npm install cors
