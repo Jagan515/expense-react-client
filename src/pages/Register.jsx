@@ -1,8 +1,9 @@
 import { useState } from "react";
 import axios from "axios";
 
-function Login({setUser}) {
+function Register({setUser}) {
   const [formData, setFormData] = useState({
+    name:"",
     email: "",
     password: ""
   });
@@ -22,6 +23,12 @@ function Login({setUser}) {
   const validate = () => {
     let newErrors = {};
     let isValid = true;
+    
+    if (formData.name.length === 0) {
+        newErrors.name = "Name is required";
+        isValid = false;
+    }
+
 
     if (formData.email.length === 0) {
       newErrors.email = "Email is required";
@@ -43,6 +50,7 @@ function Login({setUser}) {
     if (validate()) {
       try {
         const body = {
+          name:formData.name,
           email: formData.email,
           password: formData.password, //  
         };
@@ -50,14 +58,14 @@ function Login({setUser}) {
         const config = { withCredentials: true };
 
         const response = await axios.post(
-          "http://localhost:5001/auth/login",
+          "http://localhost:5001/auth/register",
           body,
           config
         );
 
         console.log(response);
         setUser(response.data.user);
-        setMessage("User authenticated");
+        setMessage("User Registered Successfully");
       } catch (error) {
         console.log(error);
         setErrors({
@@ -69,17 +77,32 @@ function Login({setUser}) {
 
   return (
     <div className="container text-center">
-      <h3>Login to Continue</h3>
+      <h3>Register</h3>
 
       {message && <p className="text-success">{message}</p>}
       {errors.message && <p className="text-danger">{errors.message}</p>}
 
       <form onSubmit={handleFormSubmit}>
+
+         <div className="mb-3">
+          <label>Name:</label>
+          <input
+            className="form-control"
+            type="text"
+            name="name"
+            onChange={handleChange}
+          />
+          {errors.name && (
+            <small className="text-danger">{errors.name}</small>
+          )}
+        </div>
+
+
         <div className="mb-3">
           <label>Email:</label>
           <input
             className="form-control"
-            type="text"
+            type="email"
             name="email"
             onChange={handleChange}
           />
@@ -102,11 +125,11 @@ function Login({setUser}) {
         </div>
 
         <button type="submit" className="btn btn-primary">
-          Login
+          Register
         </button>
       </form>
     </div>
   );
 }
 
-export default Login;
+export default Register;
