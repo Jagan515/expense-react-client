@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import {GoogleOAuthProvider,GoogleLogin} from '@react-oauth/google';
 
 function Login({setUser}) {
   const [formData, setFormData] = useState({
@@ -38,34 +39,64 @@ function Login({setUser}) {
   };
 
   const handleFormSubmit = async (event) => {
-    event.preventDefault();
+  event.preventDefault();
 
-    if (validate()) {
-      try {
-        const body = {
-          email: formData.email,
-          password: formData.password, //  
-        };
+  if (validate()) {
+    try {
+      const body = {
+        email: formData.email,
+        password: formData.password
+      };
 
-        const config = { withCredentials: true };
+      const response = await axios.post(
+        "http://localhost:5001/auth/login",
+        body,
+        { withCredentials: true }
+      );
 
-        const response = await axios.post(
-          "http://localhost:5001/auth/login",
-          body,
-          config
-        );
+      setUser(response.data.user);
+      setMessage("User authenticated");
+      setErrors({});
+    } catch (error) {
+      console.log(error);
 
-        console.log(response);
-        setUser(response.data.user);
-        setMessage("User authenticated");
-      } catch (error) {
-        console.log(error);
-        setErrors({
-          message: "Something Went Wrong. Please Try Again"
-        });
-      }
+      // read backend message 
+      setErrors({
+        message:
+          error.response?.data?.error ||
+          "Something Went Wrong. Please Try Again"
+      });
     }
-  };
+  }
+};
+
+
+  const handleGoogleSuccess = async (authResponse) => {
+  try {
+    const body = {
+      idToken: authResponse?.credential,
+    };
+
+    const response = await axios.post(
+      "http://localhost:5001/auth/google-auth",
+      body,
+      { withCredentials: true }
+    );
+
+    setUser(response.data.user);
+  } catch (error) {
+    console.log(error);
+    setErrors({ message: "Unable to login with Google" });
+  }
+};
+
+
+  const handleGoogleFailure=(error)=>{
+      console.log(error);
+      setErrors({
+        message:'Something went wrong while performing google single sign-on'
+      });
+  }
 
   return (
     <div className="container text-center">
@@ -73,7 +104,8 @@ function Login({setUser}) {
 
       {message && <p className="text-success">{message}</p>}
       {errors.message && <p className="text-danger">{errors.message}</p>}
-
+      <div className="row justify-content-center">
+        <div className="col-6">
       <form onSubmit={handleFormSubmit}>
         <div className="mb-3">
           <label>Email:</label>
@@ -105,6 +137,24 @@ function Login({setUser}) {
           Login
         </button>
       </form>
+      </div>
+      </div>
+          
+          {/* <p><a href="#" class="link-primary">Primary link</a></p> */}
+
+         <div className="row justify-content-center">
+        <div className="col-6">
+
+          <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+          <GoogleLogin 
+          onSuccess={handleGoogleSuccess} 
+          onError={handleGoogleFailure} />
+
+
+          </GoogleOAuthProvider>
+          </div>
+        </div>
+
     </div>
   );
 }

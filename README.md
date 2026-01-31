@@ -24,3 +24,6 @@ ui-compoent :https://ayroui.com/bootstrap-components/signin-signup
 
 aximos :npm install axios
 cors :npm install cors
+
+googlesso: npm install @react-oauth/google
+

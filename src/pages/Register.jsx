@@ -1,9 +1,10 @@
 import { useState } from "react";
 import axios from "axios";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 
-function Register({setUser}) {
+function Register({ setUser }) {
   const [formData, setFormData] = useState({
-    name:"",
+    name: "",
     email: "",
     password: ""
   });
@@ -13,7 +14,6 @@ function Register({setUser}) {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-
     setFormData({
       ...formData,
       [name]: value
@@ -23,12 +23,11 @@ function Register({setUser}) {
   const validate = () => {
     let newErrors = {};
     let isValid = true;
-    
-    if (formData.name.length === 0) {
-        newErrors.name = "Name is required";
-        isValid = false;
-    }
 
+    if (formData.name.length === 0) {
+      newErrors.name = "Name is required";
+      isValid = false;
+    }
 
     if (formData.email.length === 0) {
       newErrors.email = "Email is required";
@@ -50,20 +49,17 @@ function Register({setUser}) {
     if (validate()) {
       try {
         const body = {
-          name:formData.name,
+          name: formData.name,
           email: formData.email,
-          password: formData.password, //  
+          password: formData.password
         };
-
-        const config = { withCredentials: true };
 
         const response = await axios.post(
           "http://localhost:5001/auth/register",
           body,
-          config
+          { withCredentials: true }
         );
 
-        console.log(response);
         setUser(response.data.user);
         setMessage("User Registered Successfully");
       } catch (error) {
@@ -75,6 +71,32 @@ function Register({setUser}) {
     }
   };
 
+  const handleGoogleSuccess = async (authResponse) => {
+    try {
+      const body = {
+        idToken: authResponse?.credential
+      };
+
+      const response = await axios.post(
+        "http://localhost:5001/auth/google-auth",
+        body,
+        { withCredentials: true }
+      );
+
+      setUser(response.data.user);
+    } catch (error) {
+      console.log(error);
+      setErrors({ message: "Unable to login with Google" });
+    }
+  };
+
+  const handleGoogleFailure = (error) => {
+    console.log(error);
+    setErrors({
+      message: "Something went wrong while performing google single sign-on"
+    });
+  };
+
   return (
     <div className="container text-center">
       <h3>Register</h3>
@@ -82,52 +104,63 @@ function Register({setUser}) {
       {message && <p className="text-success">{message}</p>}
       {errors.message && <p className="text-danger">{errors.message}</p>}
 
-      <form onSubmit={handleFormSubmit}>
+      <div className="row justify-content-center">
+        <div className="col-6">
+          <form onSubmit={handleFormSubmit}>
+            <div className="mb-3">
+              <label>Name:</label>
+              <input
+                className="form-control"
+                type="text"
+                name="name"
+                onChange={handleChange}
+              />
+              {errors.name && (
+                <small className="text-danger">{errors.name}</small>
+              )}
+            </div>
 
-         <div className="mb-3">
-          <label>Name:</label>
-          <input
-            className="form-control"
-            type="text"
-            name="name"
-            onChange={handleChange}
-          />
-          {errors.name && (
-            <small className="text-danger">{errors.name}</small>
-          )}
+            <div className="mb-3">
+              <label>Email:</label>
+              <input
+                className="form-control"
+                type="email"
+                name="email"
+                onChange={handleChange}
+              />
+              {errors.email && (
+                <small className="text-danger">{errors.email}</small>
+              )}
+            </div>
+
+            <div className="mb-3">
+              <label>Password:</label>
+              <input
+                className="form-control"
+                type="password"
+                name="password"
+                onChange={handleChange}
+              />
+              {errors.password && (
+                <small className="text-danger">{errors.password}</small>
+              )}
+            </div>
+
+            <button type="submit" className="btn btn-primary">
+              Register
+            </button>
+          </form>
+
+          <div className="mt-4">
+            <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleFailure}
+              />
+            </GoogleOAuthProvider>
+          </div>
         </div>
-
-
-        <div className="mb-3">
-          <label>Email:</label>
-          <input
-            className="form-control"
-            type="email"
-            name="email"
-            onChange={handleChange}
-          />
-          {errors.email && (
-            <small className="text-danger">{errors.email}</small>
-          )}
-        </div>
-
-        <div className="mb-3">
-          <label>Password:</label>
-          <input
-            className="form-control"
-            type="password"
-            name="password"
-            onChange={handleChange}
-          />
-          {errors.password && (
-            <small className="text-danger">{errors.password}</small>
-          )}
-        </div>
-
-        <button type="submit" className="btn btn-primary">
-          Register
-        </button>
-      </form>
+      </div>
     </div>
   );
 }
