@@ -8,6 +8,7 @@ import AppLayout from "./components/AppLayout";
 import UserLayout from "./components/UserLayout";
 import axios from "axios";
 import Register from "./pages/Register";
+import ResetPassword from "./pages/ResetPassword";
 
 
 
@@ -108,6 +109,16 @@ function App() {
             )
         }
         />
+
+        <Route
+          path="/reset-password"
+          element={
+            <AppLayout>
+              <ResetPassword />
+            </AppLayout>
+          }
+        />
+
 
       
     </Routes>

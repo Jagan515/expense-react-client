@@ -1,8 +1,11 @@
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
 import {GoogleOAuthProvider,GoogleLogin} from '@react-oauth/google';
 
 function Login({setUser}) {
+  const navigate = useNavigate();   
   const [formData, setFormData] = useState({
     email: "",
     password: ""
@@ -19,6 +22,7 @@ function Login({setUser}) {
       [name]: value
     });
   };
+
 
   const validate = () => {
     let newErrors = {};
@@ -96,7 +100,37 @@ function Login({setUser}) {
       setErrors({
         message:'Something went wrong while performing google single sign-on'
       });
+  };
+
+
+  const handleResetPassword = async () => {
+  if (!formData.email) {
+    setErrors({ email: "Please enter email to reset password" });
+    return;
   }
+
+  try {
+    await axios.post(
+      "http://localhost:5001/auth/reset-password",
+      { email: formData.email }
+    );
+
+    setMessage("OTP sent to your email");
+    setErrors({});
+
+   
+    navigate("/reset-password", { state: { email: formData.email } });
+
+  } catch (error) {
+    setErrors({
+      message:
+        error.response?.data?.msg ||
+        "Unable to send reset password email"
+    });
+  }
+};
+
+
 
   return (
     <div className="container text-center">
@@ -136,11 +170,20 @@ function Login({setUser}) {
         <button type="submit" className="btn btn-primary">
           Login
         </button>
+        <p className="mt-2">
+            <button
+              type="button"
+              className="btn btn-link p-0"
+              onClick={handleResetPassword}
+            >
+              Forgot Password?
+            </button>
+          </p>
       </form>
       </div>
       </div>
           
-          {/* <p><a href="#" class="link-primary">Primary link</a></p> */}
+        
 
          <div className="row justify-content-center">
         <div className="col-6">
