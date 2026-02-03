@@ -1,8 +1,12 @@
 import { useState } from "react";
 import axios from "axios";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import { useDispatch } from "react-redux";
+import { SET_USER } from "../redux/user/action";
 
-function Register({ setUser }) {
+function Register() {
+  const dispatch = useDispatch();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -24,17 +28,17 @@ function Register({ setUser }) {
     let newErrors = {};
     let isValid = true;
 
-    if (formData.name.length === 0) {
+    if (!formData.name) {
       newErrors.name = "Name is required";
       isValid = false;
     }
 
-    if (formData.email.length === 0) {
+    if (!formData.email) {
       newErrors.email = "Email is required";
       isValid = false;
     }
 
-    if (formData.password.length === 0) {
+    if (!formData.password) {
       newErrors.password = "Password is required";
       isValid = false;
     }
@@ -48,52 +52,41 @@ function Register({ setUser }) {
 
     if (validate()) {
       try {
-        const body = {
-          name: formData.name,
-          email: formData.email,
-          password: formData.password
-        };
-
         const response = await axios.post(
           "http://localhost:5001/auth/register",
-          body,
+          formData,
           { withCredentials: true }
         );
 
-        setUser(response.data.user);
+        // ✅ Update Redux
+        dispatch({ type: SET_USER, payload: response.data.user });
         setMessage("User Registered Successfully");
       } catch (error) {
-        console.log(error);
-        setErrors({
-          message: "Something Went Wrong. Please Try Again"
-        });
+        console.error(error);
+        setErrors({ message: "Something went wrong. Please try again." });
       }
     }
   };
 
   const handleGoogleSuccess = async (authResponse) => {
     try {
-      const body = {
-        idToken: authResponse?.credential
-      };
-
       const response = await axios.post(
         "http://localhost:5001/auth/google-auth",
-        body,
+        { idToken: authResponse?.credential },
         { withCredentials: true }
       );
 
-      setUser(response.data.user);
+      // ✅ Update Redux
+      dispatch({ type: SET_USER, payload: response.data.user });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       setErrors({ message: "Unable to login with Google" });
     }
   };
 
-  const handleGoogleFailure = (error) => {
-    console.log(error);
+  const handleGoogleFailure = () => {
     setErrors({
-      message: "Something went wrong while performing google single sign-on"
+      message: "Something went wrong while performing Google sign-in"
     });
   };
 
@@ -152,7 +145,9 @@ function Register({ setUser }) {
           </form>
 
           <div className="mt-4">
-            <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+            <GoogleOAuthProvider
+              clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
+            >
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
                 onError={handleGoogleFailure}

@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 function UserHeader() {
+  const user = useSelector((state) => state.userDetails);
+
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary">
       <div className="container-fluid">
@@ -28,7 +31,7 @@ function UserHeader() {
                 aria-current="page"
                 to="/dashboard"
               >
-                Dashboard
+                {user?.name || "Account"}
               </Link>
             </li>
 

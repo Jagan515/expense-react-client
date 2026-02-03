@@ -1,49 +1,47 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Logout from "./pages/Logout";
-import AppLayout from "./components/AppLayout";
-import UserLayout from "./components/UserLayout";
-import axios from "axios";
 import Register from "./pages/Register";
 import ResetPassword from "./pages/ResetPassword";
 
+import AppLayout from "./components/AppLayout";
+import UserLayout from "./components/UserLayout";
+import { serverEndpoint } from "./config/appConfig";
 
+import { SET_USER, CLEAR_USER } from "./redux/user/action";
 
 function App() {
-
-  const [userDetails, setUserDetails] = useState(null); 
+  const dispatch = useDispatch();
+  const userDetails = useSelector((state) => state.userDetails);
 
   const isUserLoggedIn = async () => {
-  try {
-    const response = await axios.post(
-      "http://localhost:5001/auth/is-user-logged-in",
-      {},
-      { withCredentials: true }
-    );
+    try {
+      const response = await axios.post(
+        `${serverEndpoint}/auth/is-user-logged-in`,
+        {},
+        { withCredentials: true }
+      );
 
-    setUserDetails(response.data.user);
-  } catch (error) {
-    const status = error.response?.status;
+      dispatch({ type: SET_USER, payload: response.data.user });
+    } catch (error) {
+      if (error.response?.status === 401) {
+        dispatch({ type: CLEAR_USER });
+        return;
+      }
 
-    if (status === 401) {
-      // Expected: user not authenticated
-      setUserDetails(null);
-      return;
+      console.error("Auth check failed:", error);
     }
+  };
 
-    // Unexpected error (network, 500, etc.)
-    console.error("Auth check failed:", error);
-  }
-};
-
-
-
-  useEffect (()=>{
+  useEffect(() => {
     isUserLoggedIn();
-  },[]);
+  }, []);
 
   return (
     <Routes>
@@ -67,7 +65,7 @@ function App() {
             <Navigate to="/dashboard" />
           ) : (
             <AppLayout>
-              <Login setUser={setUserDetails} />
+              <Login />
             </AppLayout>
           )
         }
@@ -77,8 +75,8 @@ function App() {
         path="/dashboard"
         element={
           userDetails ? (
-            <UserLayout>
-              <Dashboard user={userDetails} />
+            <UserLayout >
+              <Dashboard />
             </UserLayout>
           ) : (
             <Navigate to="/login" />
@@ -89,42 +87,32 @@ function App() {
       <Route
         path="/logout"
         element={
-          userDetails ? (
-            <Logout setUser={setUserDetails} />
-          ) : (
-            <Navigate to="/login" />
-          )
+          userDetails ? <Logout /> : <Navigate to="/login" />
         }
       />
 
       <Route
         path="/register"
         element={
-            userDetails ? (
+          userDetails ? (
             <Navigate to="/dashboard" />
-            ) : (
+          ) : (
             <AppLayout>
-                <Register setUser={setUserDetails} />
+              <Register />
             </AppLayout>
-            )
+          )
         }
-        />
+      />
 
-        <Route
-          path="/reset-password"
-          element={
-            <AppLayout>
-              <ResetPassword />
-            </AppLayout>
-          }
-        />
-
-
-      
+      <Route
+        path="/reset-password"
+        element={
+          <AppLayout>
+            <ResetPassword />
+          </AppLayout>
+        }
+      />
     </Routes>
-
-
-  
   );
 }
 

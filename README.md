@@ -27,3 +27,7 @@ cors :npm install cors
 
 googlesso: npm install @react-oauth/google
 
+redux:{npm install redux
+,npm install @reduxjs/toolkit react-redux
+}
+

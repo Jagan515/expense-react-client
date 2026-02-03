@@ -1,23 +1,31 @@
 import axios from "axios";
 import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { CLEAR_USER } from "../redux/user/action";
+import { serverEndpoint } from "../config/appConfig";
 
-function Logout({ setUser }) {
+function Logout() {
+  const dispatch = useDispatch();
+
   useEffect(() => {
-    setUser(null);
+    // Clear Redux state immediately
+    dispatch({ type: CLEAR_USER });
 
+    // Inform backend
     axios
       .post(
-        "http://localhost:5001/auth/logout",
+        `${serverEndpoint}/auth/logout`,
         {},
         { withCredentials: true }
       )
+      
       .then(() => {
         console.log("Logout successful");
       })
       .catch((error) => {
         console.error("Logout Error", error);
       });
-  }, [setUser]);
+  }, [dispatch]);
 
   return null;
 }
