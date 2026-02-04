@@ -19,7 +19,5 @@ export const userReducer=(state=null,action)=>{
         // maintained by redux.
         default:
             return state;
-
-
     }
 }
