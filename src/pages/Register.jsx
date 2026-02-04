@@ -58,7 +58,7 @@ function Register() {
           { withCredentials: true }
         );
 
-        // ✅ Update Redux
+        //  Update Redux
         dispatch({ type: SET_USER, payload: response.data.user });
         setMessage("User Registered Successfully");
       } catch (error) {
@@ -76,7 +76,7 @@ function Register() {
         { withCredentials: true }
       );
 
-      // ✅ Update Redux
+      //  Update Redux
       dispatch({ type: SET_USER, payload: response.data.user });
     } catch (error) {
       console.error(error);

@@ -15,6 +15,7 @@ import UserLayout from "./components/UserLayout";
 import { serverEndpoint } from "./config/appConfig";
 
 import { SET_USER, CLEAR_USER } from "./redux/user/action";
+import Groups from "./components/Groups";
 
 function App() {
   const dispatch = useDispatch();
@@ -82,6 +83,19 @@ function App() {
             <Navigate to="/login" />
           )
         }
+      />
+
+      <Route
+      path="/groups"
+      element={
+        userDetails?(
+          <UserLayout>
+            <Groups/>
+          </UserLayout>
+        ):(
+          <Navigate to="/login"/>
+        )
+      }
       />
 
       <Route

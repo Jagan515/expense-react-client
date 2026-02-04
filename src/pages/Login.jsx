@@ -54,7 +54,7 @@ function Login() {
         { withCredentials: true }
       );
 
-      // ✅ Redux update
+      //  Redux update
       dispatch({ type: SET_USER, payload: response.data.user });
 
       setMessage("User authenticated");
@@ -76,7 +76,7 @@ function Login() {
         { withCredentials: true }
       );
 
-      // ✅ Redux update
+      //  Redux update
       dispatch({ type: SET_USER, payload: response.data.user });
     } catch (error) {
       setErrors({ message: "Unable to login with Google" });

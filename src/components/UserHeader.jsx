@@ -7,9 +7,14 @@ function UserHeader() {
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary">
       <div className="container-fluid">
+        
         <Link className="navbar-brand" to="/dashboard">
           ExpenseApp
         </Link>
+        <Link className="nav-link" to="/groups">
+        My Groups
+        </Link>
+       
 
         <button
           className="navbar-toggler"
@@ -26,6 +31,8 @@ function UserHeader() {
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
+
+            
               <Link
                 className="nav-link active"
                 aria-current="page"
