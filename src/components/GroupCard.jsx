@@ -1,5 +1,6 @@
-import { useState } from "react";
 import axios from "axios";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { serverEndpoint } from "../config/appConfig";
 
 function GroupCard({ group, onUpdate, onEdit }) {
@@ -7,9 +8,7 @@ function GroupCard({ group, onUpdate, onEdit }) {
     const [memberEmail, setMemberEmail] = useState("");
     const [errors, setErrors] = useState({});
 
-    const handleShowMember = () => {
-        setShowMembers(!showMembers);
-    };
+    const handleShowMember = () => setShowMembers(!showMembers);
 
     const handleAddMember = async () => {
         if (!memberEmail) return;
@@ -19,7 +18,7 @@ function GroupCard({ group, onUpdate, onEdit }) {
                 `${serverEndpoint}/groups/members/add`,
                 {
                     groupId: group._id,
-                    emails: [memberEmail]
+                    emails: [memberEmail],
                 },
                 { withCredentials: true }
             );
@@ -39,7 +38,7 @@ function GroupCard({ group, onUpdate, onEdit }) {
                 `${serverEndpoint}/groups/members/remove`,
                 {
                     groupId: group._id,
-                    emails: [email]
+                    emails: [email],
                 },
                 { withCredentials: true }
             );
@@ -51,76 +50,127 @@ function GroupCard({ group, onUpdate, onEdit }) {
     };
 
     return (
-        <div className="card h-100 border-0 shadow-sm rounded-4 position-relative">
-            <div className="card-body p-4">
+        <div className="card h-100 border-0 shadow-sm rounded-4 transition-hover">
+            <div className="card-body p-4 d-flex flex-column">
+                <div className="d-flex justify-content-between align-items-start mb-2">
+                    <div className="bg-primary bg-opacity-10 p-2 rounded-3 text-primary mb-2">
+                        <i className="bi bi-collection-fill fs-4"></i>
+                    </div>
 
-                {/* Header */}
-                <div className="d-flex justify-content-between align-items-center mb-2">
-                    <h5>{group.name}</h5>
-                    <button
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={onEdit}
-                    >
-                        Edit
-                    </button>
+                    <div className="d-flex gap-2 align-items-center">
+                        {group.adminEmail && (
+                            <span className="badge rounded-pill bg-light text-dark border fw-normal small">
+                                Admin: {group.adminEmail.split("@")[0]}
+                            </span>
+                        )}
+
+                        {onEdit && (
+                            <button
+                                className="btn btn-sm btn-outline-secondary"
+                                onClick={onEdit}
+                            >
+                                Edit
+                            </button>
+                        )}
+                    </div>
                 </div>
 
+                <h5 className="fw-bold mb-1 text-dark text-truncate">
+                    {group.name}
+                </h5>
+
                 <button
-                    className="btn btn-sm btn-link p-0 mb-2"
+                    className="btn btn-sm text-primary p-0 text-start fw-medium mb-3"
                     onClick={handleShowMember}
                 >
-                    {group.membersEmail.length} | Show Members
+                    <i className="bi bi-people-fill me-1"></i>
+                    {group.membersEmail.length} Members{" "}
+                    {showMembers ? "▴" : "▾"}
                 </button>
 
-                <p>{group.description}</p>
+                <p className="text-muted small mb-3 flex-grow-1">
+                    {group.description || "No description provided."}
+                </p>
 
-                {/* Members */}
+                <Link
+                    to={`/groups/${group._id}`}
+                    className="btn btn-outline-primary btn-sm rounded-pill fw-bold mb-4 w-100 py-2"
+                >
+                    View & Add Expenses
+                </Link>
+
                 {showMembers && (
-                    <div className="rounded-3 p-3 mb-3 border">
-                        <h6>Members in this Group</h6>
-                        {group.membersEmail.map((member, index) => (
-                            <div
-                                key={index}
-                                className="d-flex justify-content-between align-items-center"
-                            >
-                                <span>{index + 1}. {member}</span>
-                                <button
-                                    className="btn btn-sm btn-danger"
-                                    onClick={() => handleRemoveMember(member)}
+                    <div className="bg-light rounded-3 p-3 mb-4 shadow-inner">
+                        <h6 className="extra-small fw-bold text-uppercase text-secondary mb-3">
+                            Member List
+                        </h6>
+
+                        <div
+                            className="overflow-auto"
+                            style={{ maxHeight: "150px" }}
+                        >
+                            {group.membersEmail.map((member, index) => (
+                                <div
+                                    key={index}
+                                    className="d-flex justify-content-between align-items-center mb-2"
                                 >
-                                    Remove
-                                </button>
-                            </div>
-                        ))}
+                                    <div className="d-flex align-items-center">
+                                        <div
+                                            className="rounded-circle bg-white border d-flex align-items-center justify-content-center me-2 fw-bold text-primary shadow-sm"
+                                            style={{
+                                                width: "24px",
+                                                height: "24px",
+                                                fontSize: "10px",
+                                            }}
+                                        >
+                                            {member.charAt(0).toUpperCase()}
+                                        </div>
+                                        <span className="small text-dark">
+                                            {member}
+                                        </span>
+                                    </div>
+
+                                    <button
+                                        className="btn btn-sm btn-danger"
+                                        onClick={() =>
+                                            handleRemoveMember(member)
+                                        }
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
 
-                {/* Add Member */}
-                <div className="mb-3">
-                    <label className="form-label extra-small fw-bold text-secondary">
-                        Add Member
+                {errors.message && (
+                    <div className="alert alert-danger py-1 px-2 small border-0 mb-3">
+                        {errors.message}
+                    </div>
+                )}
+
+                <div className="mt-auto pt-3 border-top">
+                    <label className="form-label extra-small fw-bold text-uppercase text-muted mb-2">
+                        Invite a Friend
                     </label>
                     <div className="input-group input-group-sm">
                         <input
                             type="email"
-                            className="form-control border-end-0"
+                            className="form-control bg-light border-0 px-3"
+                            placeholder="email@example.com"
                             value={memberEmail}
-                            onChange={(e) => setMemberEmail(e.target.value)}
+                            onChange={(e) =>
+                                setMemberEmail(e.target.value)
+                            }
                         />
                         <button
-                            type="button"
-                            className="btn btn-primary px-3"
+                            className="btn btn-primary px-3 fw-bold"
                             onClick={handleAddMember}
                         >
                             Add
                         </button>
                     </div>
-
-                    {errors.message && (
-                        <div className="text-danger small mt-1">
-                            {errors.message}
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

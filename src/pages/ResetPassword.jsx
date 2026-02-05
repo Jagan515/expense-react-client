@@ -3,169 +3,208 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 
 function ResetPassword() {
-  const navigate = useNavigate();
-  const location = useLocation();
+    const navigate = useNavigate();
+    const location = useLocation();
 
-  // email coming from Login page
-  const email = location.state?.email || "";
+    const email =
+        location.state?.email ||
+        localStorage.getItem("resetEmail") ||
+        "";
 
-  const [formData, setFormData] = useState({
-    otp: "",
-    newPassword: ""
-  });
+    const [formData, setFormData] = useState({
+        otp: "",
+        newPassword: ""
+    });
 
-  const [errors, setErrors] = useState({});
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+    const [errors, setErrors] = useState({});
+    const [message, setMessage] = useState("");
+    const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
 
-  const validate = () => {
-    let newErrors = {};
-    let isValid = true;
+        if (errors[name]) {
+            setErrors({ ...errors, [name]: null });
+        }
+    };
 
-    if (!formData.otp) {
-      newErrors.otp = "OTP is required";
-      isValid = false;
-    }
+    const validate = () => {
+        let newErrors = {};
 
-    if (!formData.newPassword) {
-      newErrors.newPassword = "New password is required";
-      isValid = false;
-    }
+        if (!formData.otp) {
+            newErrors.otp = "OTP is required";
+        }
 
-    setErrors(newErrors);
-    return isValid;
-  };
+        if (!formData.newPassword) {
+            newErrors.newPassword = "New password is required";
+        }
 
-  // Change Password
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
-    if (!validate()) return;
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-    try {
-      setLoading(true);
+        if (!email) {
+            setErrors({ message: "Email missing. Please restart reset flow." });
+            return;
+        }
 
-      await axios.post("http://localhost:5001/auth/change-password", {
-        email,
-        otp: formData.otp,
-        newPassword: formData.newPassword
-      });
+        if (!validate()) return;
 
-      setMessage("Password changed successfully");
-      setErrors({});
+        try {
+            setLoading(true);
 
-      // redirect to login after success
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
+            await axios.post("http://localhost:5001/auth/change-password", {
+                email,
+                otp: formData.otp,
+                newPassword: formData.newPassword
+            });
 
-    } catch (error) {
-      setErrors({
-        message:
-          error.response?.data?.msg ||
-          "Invalid or expired OTP"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+            setMessage("Password updated successfully");
+            setErrors({});
+            localStorage.removeItem("resetEmail");
 
-  // Resend OTP
-  const handleResendOtp = async () => {
-    try {
-      setLoading(true);
+            setTimeout(() => navigate("/login"), 1500);
+        } catch (error) {
+            setErrors({
+                message:
+                    error.response?.data?.msg ||
+                    "Invalid or expired OTP"
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
-      await axios.post("http://localhost:5001/auth/reset-password", {
-        email
-      });
+    const handleResendOtp = async () => {
+        if (!email) {
+            setErrors({ message: "Email missing. Please restart reset flow." });
+            return;
+        }
 
-      setMessage("OTP resent to your email");
-      setErrors({});
-    } catch (error) {
-      setErrors({
-        message: "Wait for 2 minutes to resend OTP"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+        try {
+            setLoading(true);
+            await axios.post("http://localhost:5001/auth/reset-password", {
+                email
+            });
+            setMessage("OTP resent to your email");
+            setErrors({});
+        } catch {
+            setErrors({
+                message: "Please wait 2 minutes before resending OTP"
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  return (
-    <div className="container text-center">
-      <h3>Reset Password</h3>
+    return (
+        <div className="container py-5">
+            <div className="row justify-content-center">
+                <div className="col-md-5">
+                    <div className="card shadow-lg border-0 rounded-4">
+                        <div className="card-body p-5">
+                            <div className="text-center mb-4">
+                                <h3 className="fw-bold">Reset Password</h3>
+                                <p className="text-muted small">
+                                    Enter the OTP sent to your email
+                                </p>
+                            </div>
 
-      {message && <p className="text-success">{message}</p>}
-      {errors.message && <p className="text-danger">{errors.message}</p>}
+                            {(message || errors.message) && (
+                                <div
+                                    className={`alert ${
+                                        message
+                                            ? "alert-success"
+                                            : "alert-danger"
+                                    } py-2 small border-0`}
+                                >
+                                    {message || errors.message}
+                                </div>
+                            )}
 
-      <div className="row justify-content-center">
-        <div className="col-6">
-          <form onSubmit={handleSubmit}>
+                            <form onSubmit={handleSubmit} noValidate>
+                                <div className="mb-3">
+                                    <label className="form-label small fw-bold">
+                                        Email
+                                    </label>
+                                    <input
+                                        type="text"
+                                        className="form-control bg-light"
+                                        value={email}
+                                        disabled
+                                    />
+                                </div>
 
-            <div className="mb-3">
-              <label>Email:</label>
-              <input
-                className="form-control"
-                type="text"
-                value={email}
-                disabled
-              />
+                                <div className="mb-3">
+                                    <label className="form-label small fw-bold">
+                                        OTP
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="otp"
+                                        className={`form-control ${
+                                            errors.otp ? "is-invalid" : ""
+                                        }`}
+                                        onChange={handleChange}
+                                    />
+                                    {errors.otp && (
+                                        <div className="invalid-feedback">
+                                            {errors.otp}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="mb-4">
+                                    <label className="form-label small fw-bold">
+                                        New Password
+                                    </label>
+                                    <input
+                                        type="password"
+                                        name="newPassword"
+                                        className={`form-control ${
+                                            errors.newPassword
+                                                ? "is-invalid"
+                                                : ""
+                                        }`}
+                                        onChange={handleChange}
+                                    />
+                                    {errors.newPassword && (
+                                        <div className="invalid-feedback">
+                                            {errors.newPassword}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    className="btn btn-primary w-100 rounded-pill fw-bold"
+                                    disabled={loading}
+                                >
+                                    {loading
+                                        ? "Please wait..."
+                                        : "Change Password"}
+                                </button>
+                            </form>
+
+                            <div className="text-center mt-3">
+                                <button
+                                    className="btn btn-link small"
+                                    onClick={handleResendOtp}
+                                    disabled={loading}
+                                >
+                                    Resend OTP
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <div className="mb-3">
-              <label>OTP:</label>
-              <input
-                className="form-control"
-                type="text"
-                name="otp"
-                onChange={handleChange}
-              />
-              {errors.otp && (
-                <small className="text-danger">{errors.otp}</small>
-              )}
-            </div>
-
-            <div className="mb-3">
-              <label>New Password:</label>
-              <input
-                className="form-control"
-                type="password"
-                name="newPassword"
-                onChange={handleChange}
-              />
-              {errors.newPassword && (
-                <small className="text-danger">
-                  {errors.newPassword}
-                </small>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={loading}
-            >
-              {loading ? "Please wait..." : "Change Password"}
-            </button>
-          </form>
-
-          <p className="mt-3">
-            <button
-              className="btn btn-link"
-              onClick={handleResendOtp}
-              disabled={loading}
-            >
-              Resend OTP
-            </button>
-          </p>
         </div>
-      </div>
-    </div>
-  );
+    );
 }
 
 export default ResetPassword;

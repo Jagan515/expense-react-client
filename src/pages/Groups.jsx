@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { serverEndpoint } from '../config/appConfig';
 import { useEffect, useState } from 'react';
-import GroupCard from './GroupCard';
-import CreateGroupModal from './CreateGroupModal';
-import UpdateGroupModal from './UpdateGroupModal';
+import GroupCard from '../components/GroupCard';
+import CreateGroupModal from '../components/CreateGroupModal';
+import UpdateGroupModal from '../components/UpdateGroupModal';
 
 function Groups() {
     const [groups, setGroups] = useState([]);

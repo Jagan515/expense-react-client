@@ -5,29 +5,32 @@ import { CLEAR_USER } from "../redux/user/action";
 import { serverEndpoint } from "../config/appConfig";
 
 function Logout() {
-  const dispatch = useDispatch();
+    const dispatch = useDispatch();
 
-  useEffect(() => {
-    // Clear Redux state immediately
-    dispatch({ type: CLEAR_USER });
+    useEffect(() => {
+        const handleLogout = async () => {
+            // Clear Redux state immediately
+            dispatch({ type: CLEAR_USER });
 
-    // Inform backend
-    axios
-      .post(
-        `${serverEndpoint}/auth/logout`,
-        {},
-        { withCredentials: true }
-      )
-      
-      .then(() => {
-        console.log("Logout successful");
-      })
-      .catch((error) => {
-        console.error("Logout Error", error);
-      });
-  }, [dispatch]);
+            try {
+                await axios.post(
+                    `${serverEndpoint}/auth/logout`,
+                    {},
+                    { withCredentials: true }
+                );
 
-  return null;
+                // Clear cookie if present
+                document.cookie =
+                    "jwtToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            } catch (error) {
+                console.error("Logout Error", error);
+            }
+        };
+
+        handleLogout();
+    }, [dispatch]);
+
+    return null;
 }
 
 export default Logout;
