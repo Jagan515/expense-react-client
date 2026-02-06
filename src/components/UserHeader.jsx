@@ -42,6 +42,17 @@ function UserHeader() {
               </Link>
             </li>
 
+
+
+            <li className="nav-item">
+              <Link className="dropdown-item py-2 fw-medium" to="/manage-users">
+                <i className="bi bi-person-check me-2"></i>{""}
+                Manage Users
+              </Link>
+            </li>
+
+
+
             <li className="nav-item">
               <Link className="nav-link" to="/logout">
                 Logout

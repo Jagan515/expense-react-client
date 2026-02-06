@@ -11,9 +11,13 @@ import Register from "./pages/Register";
 import ResetPassword from "./pages/ResetPassword";
 import Groups from "./pages/Groups";
 import GroupExpenses from "./pages/GroupExpenses";
+import ManageUsers from "./pages/ManageUsers";
 
 import AppLayout from "./components/AppLayout";
 import UserLayout from "./components/UserLayout";
+import UnauthorizedAccess from "./components/erros/UnauthorizedAccess";
+
+import ProtectedRoute from "./rbac/ProtectedRoute";
 
 import { serverEndpoint } from "./config/appConfig";
 import { SET_USER, CLEAR_USER } from "./redux/user/action";
@@ -100,12 +104,14 @@ function App() {
             />
 
             <Route
-                path="/groups/:groupId"
+                path="/manage-users"
                 element={
                     userDetails ? (
-                        <UserLayout>
-                            <GroupExpenses />
-                        </UserLayout>
+                        <ProtectedRoute roles={["admin"]}>
+                            <UserLayout>
+                                <ManageUsers />
+                            </UserLayout>
+                        </ProtectedRoute>
                     ) : (
                         <Navigate to="/login" />
                     )
@@ -126,10 +132,21 @@ function App() {
             />
 
             <Route
-                path="/logout"
+                path="/groups/:groupId"
                 element={
-                    userDetails ? <Logout /> : <Navigate to="/login" />
+                    userDetails ? (
+                        <UserLayout>
+                            <GroupExpenses />
+                        </UserLayout>
+                    ) : (
+                        <Navigate to="/login" />
+                    )
                 }
+            />
+
+            <Route
+                path="/logout"
+                element={userDetails ? <Logout /> : <Navigate to="/login" />}
             />
 
             <Route
@@ -151,6 +168,21 @@ function App() {
                     <AppLayout>
                         <ResetPassword />
                     </AppLayout>
+                }
+            />
+
+            <Route
+                path="/unauthorized-access"
+                element={
+                    userDetails ? (
+                        <UserLayout>
+                            <UnauthorizedAccess />
+                        </UserLayout>
+                    ) : (
+                        <AppLayout>
+                            <UnauthorizedAccess />
+                        </AppLayout>
+                    )
                 }
             />
         </Routes>

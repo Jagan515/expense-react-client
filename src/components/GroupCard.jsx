@@ -79,6 +79,17 @@ function GroupCard({ group, onUpdate, onEdit }) {
                     {group.name}
                 </h5>
 
+                {/* <button
+                    className="btn btn-sm text-primary p-0 text-start fw-medium mb-3"
+                    onClick={handleShowMember}
+                >
+                    
+                    <i className="bi bi-people-fill me-1"></i>
+                    {group.membersEmail.length} Members{" "}
+                    {showMembers ? "▴" : "▾"}
+                </button> */}
+
+
                 <button
                     className="btn btn-sm text-primary p-0 text-start fw-medium mb-3"
                     onClick={handleShowMember}
@@ -87,6 +98,7 @@ function GroupCard({ group, onUpdate, onEdit }) {
                     {group.membersEmail.length} Members{" "}
                     {showMembers ? "▴" : "▾"}
                 </button>
+
 
                 <p className="text-muted small mb-3 flex-grow-1">
                     {group.description || "No description provided."}
