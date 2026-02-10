@@ -1,6 +1,10 @@
 import { useState } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+
+
+import { serverEndpoint } from "../config/appConfig";
 
 function ResetPassword() {
     const navigate = useNavigate();
@@ -13,42 +17,52 @@ function ResetPassword() {
 
     const [formData, setFormData] = useState({
         otp: "",
-        newPassword: ""
+        newPassword: "",
     });
 
-    const [errors, setErrors] = useState({});
+    const [fieldErrors, setFieldErrors] = useState({});
+    const [error, setError] = useState("");
     const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
 
-        if (errors[name]) {
-            setErrors({ ...errors, [name]: null });
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+
+        if (fieldErrors[name]) {
+            setFieldErrors((prev) => ({
+                ...prev,
+                [name]: "",
+            }));
         }
     };
 
     const validate = () => {
-        let newErrors = {};
+        let errors = {};
 
         if (!formData.otp) {
-            newErrors.otp = "OTP is required";
+            errors.otp = "OTP is required";
         }
 
         if (!formData.newPassword) {
-            newErrors.newPassword = "New password is required";
+            errors.newPassword = "New password is required";
         }
 
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        setFieldErrors(errors);
+        return Object.keys(errors).length === 0;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError("");
+        setMessage("");
 
         if (!email) {
-            setErrors({ message: "Email missing. Please restart reset flow." });
+            setError("Email missing. Please restart reset flow.");
             return;
         }
 
@@ -57,49 +71,78 @@ function ResetPassword() {
         try {
             setLoading(true);
 
-            await axios.post("http://localhost:5001/auth/change-password", {
-                email,
-                otp: formData.otp,
-                newPassword: formData.newPassword
-            });
+            await axios.post(
+                `${serverEndpoint}/auth/change-password`,
+                {
+                    email,
+                    otp: formData.otp,
+                    newPassword: formData.newPassword,
+                }
+            );
 
             setMessage("Password updated successfully");
-            setErrors({});
             localStorage.removeItem("resetEmail");
 
             setTimeout(() => navigate("/login"), 1500);
-        } catch (error) {
-            setErrors({
-                message:
-                    error.response?.data?.msg ||
-                    "Invalid or expired OTP"
-            });
+        } catch (err) {
+            console.error("Change password failed:", err);
+            setError(
+                err.response?.data?.msg || "Invalid or expired OTP"
+            );
         } finally {
             setLoading(false);
         }
     };
 
     const handleResendOtp = async () => {
+        setError("");
+        setMessage("");
+
         if (!email) {
-            setErrors({ message: "Email missing. Please restart reset flow." });
+            setError("Email missing. Please restart reset flow.");
             return;
         }
 
         try {
             setLoading(true);
-            await axios.post("http://localhost:5001/auth/reset-password", {
-                email
-            });
+
+            await axios.post(
+                `${serverEndpoint}/auth/reset-password`,
+                { email }
+            );
+
             setMessage("OTP resent to your email");
-            setErrors({});
-        } catch {
-            setErrors({
-                message: "Please wait 2 minutes before resending OTP"
-            });
+        } catch (err) {
+            console.error("Resend OTP failed:", err);
+            setError("Please wait 2 minutes before resending OTP");
         } finally {
             setLoading(false);
         }
     };
+
+
+
+    useEffect(() => {
+    if (!email) return;
+
+    const sendOtp = async () => {
+        try {
+            await axios.post(
+                `${serverEndpoint}/auth/reset-password`,
+                { email },
+                { withCredentials: true }
+            );
+
+            setMessage("OTP sent to your email");
+            localStorage.setItem("resetEmail", email);
+        } catch (err) {
+            console.error("Auto OTP send failed:", err);
+        }
+    };
+
+    sendOtp();
+}, [email]);
+
 
     return (
         <div className="container py-5">
@@ -114,7 +157,7 @@ function ResetPassword() {
                                 </p>
                             </div>
 
-                            {(message || errors.message) && (
+                            {(message || error) && (
                                 <div
                                     className={`alert ${
                                         message
@@ -122,7 +165,7 @@ function ResetPassword() {
                                             : "alert-danger"
                                     } py-2 small border-0`}
                                 >
-                                    {message || errors.message}
+                                    {message || error}
                                 </div>
                             )}
 
@@ -146,14 +189,17 @@ function ResetPassword() {
                                     <input
                                         type="text"
                                         name="otp"
+                                        value={formData.otp}
                                         className={`form-control ${
-                                            errors.otp ? "is-invalid" : ""
+                                            fieldErrors.otp
+                                                ? "is-invalid"
+                                                : ""
                                         }`}
                                         onChange={handleChange}
                                     />
-                                    {errors.otp && (
+                                    {fieldErrors.otp && (
                                         <div className="invalid-feedback">
-                                            {errors.otp}
+                                            {fieldErrors.otp}
                                         </div>
                                     )}
                                 </div>
@@ -165,16 +211,17 @@ function ResetPassword() {
                                     <input
                                         type="password"
                                         name="newPassword"
+                                        value={formData.newPassword}
                                         className={`form-control ${
-                                            errors.newPassword
+                                            fieldErrors.newPassword
                                                 ? "is-invalid"
                                                 : ""
                                         }`}
                                         onChange={handleChange}
                                     />
-                                    {errors.newPassword && (
+                                    {fieldErrors.newPassword && (
                                         <div className="invalid-feedback">
-                                            {errors.newPassword}
+                                            {fieldErrors.newPassword}
                                         </div>
                                     )}
                                 </div>
@@ -192,6 +239,7 @@ function ResetPassword() {
 
                             <div className="text-center mt-3">
                                 <button
+                                    type="button"
                                     className="btn btn-link small"
                                     onClick={handleResendOtp}
                                     disabled={loading}

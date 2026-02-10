@@ -9,14 +9,15 @@
 // export default Can;
 
 
-
 import { usePermissions } from "../rbac/userPermissions";
 
-function Can({ requiredPermission, children }) {
+// Permission-based render guard
+function Can({ requiredPermission = "", children }) {
     const permissions = usePermissions();
-    console.log("permissions:", permissions);
-    console.log("required:", requiredPermission);
 
+    if (!requiredPermission) {
+        return null;
+    }
 
     if (!permissions[requiredPermission]) {
         return null;

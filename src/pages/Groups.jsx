@@ -1,9 +1,12 @@
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { serverEndpoint } from "../config/appConfig";
-import { useEffect, useState } from "react";
+
 import GroupCard from "../components/GroupCard";
 import CreateGroupModal from "../components/CreateGroupModal";
 import RemoveMemberModal from "../components/RemoveMemberModal";
+import Loading from "../components/Loading";
+
 import { usePermissions } from "../rbac/userPermissions";
 
 function Groups() {
@@ -23,6 +26,7 @@ function Groups() {
 
     const fetchGroups = async (page = 1) => {
         setLoading(true);
+
         try {
             const response = await axios.get(
                 `${serverEndpoint}/groups/my-groups?page=${page}&limit=${limit}&sortBy=${sortBy}`,
@@ -32,7 +36,7 @@ function Groups() {
             setGroups(response.data.groups || []);
             setTotalPages(response?.data?.pagination?.totalPages || 1);
         } catch (error) {
-            console.error(error);
+            console.error("Failed to fetch groups:", error);
         } finally {
             setLoading(false);
         }
@@ -47,7 +51,6 @@ function Groups() {
         }
     };
 
-
     useEffect(() => {
         fetchGroups(currentPage);
     }, [currentPage, limit, sortBy]);
@@ -59,12 +62,11 @@ function Groups() {
     };
 
     if (loading) {
-        return <p className="text-center mt-5">Loading...</p>;
+        return <Loading text="Loading groups..." />;
     }
 
     return (
         <div className="container py-5">
-            {/* Header */}
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h3>Groups</h3>
 
@@ -92,7 +94,9 @@ function Groups() {
                 )}
             </div>
 
-            {groups.length === 0 && <p>No groups found</p>}
+            {groups.length === 0 && (
+                <p className="text-muted">No groups found</p>
+            )}
 
             {groups.length > 0 && (
                 <div className="row g-3">
@@ -111,7 +115,6 @@ function Groups() {
                 </div>
             )}
 
-            {/* Footer */}
             <div className="d-flex justify-content-between align-items-center mt-4">
                 <div>
                     <label className="me-2">Items per page:</label>
@@ -134,8 +137,9 @@ function Groups() {
                 {totalPages > 1 && (
                     <ul className="pagination mb-0">
                         <li
-                            className={`page-item ${currentPage === 1 ? "disabled" : ""
-                                }`}
+                            className={`page-item ${
+                                currentPage === 1 ? "disabled" : ""
+                            }`}
                         >
                             <button
                                 className="page-link"
@@ -150,8 +154,9 @@ function Groups() {
                         {[...Array(totalPages)].map((_, index) => (
                             <li
                                 key={index}
-                                className={`page-item ${currentPage === index + 1 ? "active" : ""
-                                    }`}
+                                className={`page-item ${
+                                    currentPage === index + 1 ? "active" : ""
+                                }`}
                             >
                                 <button
                                     className="page-link"
@@ -165,10 +170,9 @@ function Groups() {
                         ))}
 
                         <li
-                            className={`page-item ${currentPage === totalPages
-                                    ? "disabled"
-                                    : ""
-                                }`}
+                            className={`page-item ${
+                                currentPage === totalPages ? "disabled" : ""
+                            }`}
                         >
                             <button
                                 className="page-link"
@@ -183,14 +187,12 @@ function Groups() {
                 )}
             </div>
 
-            {/* Create Group Modal */}
             <CreateGroupModal
                 show={show}
                 onHide={() => setShow(false)}
                 onSuccess={handleGroupUpdateSuccess}
             />
 
-            {/* Remove Member Modal */}
             {activeGroup && (
                 <RemoveMemberModal
                     show={showRemoveModal}

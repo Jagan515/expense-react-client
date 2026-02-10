@@ -1,8 +1,12 @@
 function Footer() {
+    const currentYear = new Date().getFullYear();
+
     return (
-        <div className="container-fluid bg-light text-center py-3">
-            All rights reserved.
-        </div>
+        <footer className="container-fluid bg-light border-top text-center py-3 mt-auto">
+            <span className="text-muted small">
+                © {currentYear} ExpenseApp. All rights reserved.
+            </span>
+        </footer>
     );
 }
 

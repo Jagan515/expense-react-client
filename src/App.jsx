@@ -12,22 +12,32 @@ import ResetPassword from "./pages/ResetPassword";
 import Groups from "./pages/Groups";
 import GroupExpenses from "./pages/GroupExpenses";
 import ManageUsers from "./pages/ManageUsers";
+import Account from "./pages/Account";
+import ManagePayments from "./pages/ManagePayments";
 
 import AppLayout from "./components/AppLayout";
 import UserLayout from "./components/UserLayout";
 import UnauthorizedAccess from "./components/erros/UnauthorizedAccess";
+import Loading from "./components/Loading";
 
 import ProtectedRoute from "./rbac/ProtectedRoute";
 
 import { serverEndpoint } from "./config/appConfig";
 import { SET_USER, CLEAR_USER } from "./redux/user/action";
 
+const ROUTES = {
+    LOGIN: "/login",
+    DASHBOARD: "/dashboard",
+    GROUPS: "/groups",
+    ACCOUNT: "/account",
+};
+
 function App() {
     const dispatch = useDispatch();
     const userDetails = useSelector((state) => state.userDetails);
     const [loading, setLoading] = useState(true);
 
-    const isUserLoggedIn = async () => {
+    const checkAuthStatus = async () => {
         try {
             const response = await axios.post(
                 `${serverEndpoint}/auth/is-user-logged-in`,
@@ -51,15 +61,11 @@ function App() {
     };
 
     useEffect(() => {
-        isUserLoggedIn();
+        checkAuthStatus();
     }, []);
 
     if (loading) {
-        return (
-            <div className="container text-center">
-                <h3>Loading...</h3>
-            </div>
-        );
+        return <Loading text="Checking authentication..." />;
     }
 
     return (
@@ -68,7 +74,7 @@ function App() {
                 path="/"
                 element={
                     userDetails ? (
-                        <Navigate to="/dashboard" />
+                        <Navigate to={ROUTES.DASHBOARD} />
                     ) : (
                         <AppLayout>
                             <Home />
@@ -78,10 +84,10 @@ function App() {
             />
 
             <Route
-                path="/login"
+                path={ROUTES.LOGIN}
                 element={
                     userDetails ? (
-                        <Navigate to="/dashboard" />
+                        <Navigate to={ROUTES.DASHBOARD} />
                     ) : (
                         <AppLayout>
                             <Login />
@@ -91,14 +97,14 @@ function App() {
             />
 
             <Route
-                path="/dashboard"
+                path={ROUTES.DASHBOARD}
                 element={
                     userDetails ? (
                         <UserLayout>
-                            <Groups />
+                            <Dashboard />
                         </UserLayout>
                     ) : (
-                        <Navigate to="/login" />
+                        <Navigate to={ROUTES.LOGIN} />
                     )
                 }
             />
@@ -113,20 +119,20 @@ function App() {
                             </UserLayout>
                         </ProtectedRoute>
                     ) : (
-                        <Navigate to="/login" />
+                        <Navigate to={ROUTES.LOGIN} />
                     )
                 }
             />
 
             <Route
-                path="/groups"
+                path={ROUTES.GROUPS}
                 element={
                     userDetails ? (
                         <UserLayout>
                             <Groups />
                         </UserLayout>
                     ) : (
-                        <Navigate to="/login" />
+                        <Navigate to={ROUTES.LOGIN} />
                     )
                 }
             />
@@ -139,21 +145,27 @@ function App() {
                             <GroupExpenses />
                         </UserLayout>
                     ) : (
-                        <Navigate to="/login" />
+                        <Navigate to={ROUTES.LOGIN} />
                     )
                 }
             />
 
             <Route
                 path="/logout"
-                element={userDetails ? <Logout /> : <Navigate to="/login" />}
+                element={
+                    userDetails ? (
+                        <Logout />
+                    ) : (
+                        <Navigate to={ROUTES.LOGIN} />
+                    )
+                }
             />
 
             <Route
                 path="/register"
                 element={
                     userDetails ? (
-                        <Navigate to="/dashboard" />
+                        <Navigate to={ROUTES.DASHBOARD} />
                     ) : (
                         <AppLayout>
                             <Register />
@@ -182,6 +194,34 @@ function App() {
                         <AppLayout>
                             <UnauthorizedAccess />
                         </AppLayout>
+                    )
+                }
+            />
+
+            <Route
+                path={ROUTES.ACCOUNT}
+                element={
+                    userDetails ? (
+                        <UserLayout>
+                            <Account />
+                        </UserLayout>
+                    ) : (
+                        <Navigate to={ROUTES.LOGIN} />
+                    )
+                }
+            />
+
+            <Route
+                path="/manage-payments"
+                element={
+                    userDetails ? (
+                        <ProtectedRoute roles={["admin"]}>
+                            <UserLayout>
+                                <ManagePayments />
+                            </UserLayout>
+                        </ProtectedRoute>
+                    ) : (
+                        <Navigate to={ROUTES.LOGIN} />
                     )
                 }
             />

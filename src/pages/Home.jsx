@@ -1,5 +1,7 @@
-import React from "react";
 import { Link } from "react-router-dom";
+
+const CIRCLE_SIZE = 12;
+const FEATURE_TEXT_WIDTH = "600px";
 
 function Home() {
     return (
@@ -11,18 +13,21 @@ function Home() {
                             <span className="badge rounded-pill bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3 fw-bold">
                                 All-in-One Finance Manager
                             </span>
+
                             <h1 className="display-3 fw-bold text-dark mb-4">
                                 Stop tracking twice. <br />
                                 <span className="text-primary">
                                     Start Merging.
                                 </span>
                             </h1>
+
                             <p className="lead text-muted mb-5">
                                 The first app that bridges the gap between
                                 splitting bills with friends and tracking your
                                 personal wealth. One transaction, zero
                                 double-entry.
                             </p>
+
                             <div className="d-flex justify-content-center justify-content-lg-start gap-3">
                                 <Link
                                     to="/login"
@@ -30,27 +35,40 @@ function Home() {
                                 >
                                     Get Started
                                 </Link>
-                                <a
-                                    href="#"
+
+                                <Link
+                                    to="/#features"
                                     className="btn btn-outline-secondary btn-lg px-5 rounded-pill"
                                 >
                                     Learn More
-                                </a>
+                                </Link>
                             </div>
                         </div>
 
                         <div className="col-lg-6 d-none d-lg-block">
                             <div className="card shadow-lg border-0 rounded-4 overflow-hidden">
                                 <div className="bg-dark p-3 d-flex gap-2">
-                                    <div className="rounded-circle bg-danger" style={{ width: 12, height: 12 }} />
-                                    <div className="rounded-circle bg-warning" style={{ width: 12, height: 12 }} />
-                                    <div className="rounded-circle bg-success" style={{ width: 12, height: 12 }} />
+                                    <div
+                                        className="rounded-circle bg-danger"
+                                        style={{ width: CIRCLE_SIZE, height: CIRCLE_SIZE }}
+                                    />
+                                    <div
+                                        className="rounded-circle bg-warning"
+                                        style={{ width: CIRCLE_SIZE, height: CIRCLE_SIZE }}
+                                    />
+                                    <div
+                                        className="rounded-circle bg-success"
+                                        style={{ width: CIRCLE_SIZE, height: CIRCLE_SIZE }}
+                                    />
                                 </div>
+
                                 <div className="card-body p-4 bg-white text-center">
                                     <h6 className="text-muted text-uppercase small">
                                         Net Worth This Month
                                     </h6>
+
                                     <h2 className="fw-bold">₹75,400.00</h2>
+
                                     <div className="mt-3 p-3 bg-light rounded-3 text-start border-start border-primary border-4">
                                         <div className="d-flex justify-content-between fw-bold">
                                             <span>Goa Trip Split</span>
@@ -65,14 +83,20 @@ function Home() {
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </header>
 
             <section id="features" className="container py-5">
                 <div className="text-center mb-5">
-                    <h2 className="fw-bold h1">Why MergeMoney is Different</h2>
-                    <p className="text-muted mx-auto" style={{ maxWidth: "600px" }}>
+                    <h2 className="fw-bold h1">
+                        Why MergeMoney is Different
+                    </h2>
+                    <p
+                        className="text-muted mx-auto"
+                        style={{ maxWidth: FEATURE_TEXT_WIDTH }}
+                    >
                         We believe your share of a group expense IS a personal
                         expense. We handle the math so you don't have to.
                     </p>

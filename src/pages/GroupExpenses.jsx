@@ -1,48 +1,132 @@
-import { useParams, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+import { serverEndpoint } from "../config/appConfig";
+
+import GroupHeader from "../components/GroupHeader";
+import ExpenseSummary from "../components/ExpenseSummary";
+import ExpenseList from "../components/ExpenseList";
+import AddExpense from "../components/AddExpense";
+import SettleGroup from "../components/SettleGroup";
+import Loading from "../components/Loading";
 
 function GroupExpenses() {
-    // 1. Get the groupId from the URL
     const { groupId } = useParams();
+
+    const [group, setGroup] = useState(null);
+    const [expenses, setExpenses] = useState([]);
+    const [summary, setSummary] = useState({});
+    const [loading, setLoading] = useState(true);
+
+    // Fetch group, expenses, and summary together
+    const fetchExpenses = async () => {
+        const res = await axios.get(
+            `${serverEndpoint}/expenses/group/${groupId}`,
+            { withCredentials: true }
+        );
+
+        setGroup(res.data.group || null);
+        setExpenses(res.data.expenses || []);
+        setSummary(res.data.summary || {});
+    };
+
+    const refreshExpenses = async () => {
+        try {
+            await fetchExpenses();
+        } catch (error) {
+            console.error("Failed to refresh expenses:", error);
+        }
+    };
+
+    const handleMemberSettled = async (memberEmail) => {
+        try {
+            await axios.post(
+                `${serverEndpoint}/expenses/group/${groupId}/settle/member`,
+                { memberEmail },
+                { withCredentials: true }
+            );
+
+            refreshExpenses();
+        } catch (error) {
+            console.error("Failed to settle member:", error);
+        }
+    };
+
+    const handleSplitsUpdated = async (splits) => {
+        try {
+            await axios.patch(
+                `${serverEndpoint}/expenses/group/${groupId}/splits`,
+                { splits },
+                { withCredentials: true }
+            );
+
+            refreshExpenses();
+        } catch (error) {
+            console.error("Failed to update splits:", error);
+        }
+    };
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                setLoading(true);
+                await fetchExpenses();
+            } catch (error) {
+                console.error("Failed to load group expenses:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadData();
+    }, [groupId]);
+
+    if (loading) {
+        return <Loading text="Loading group expenses..." />;
+    }
+
+    if (!group) {
+        return (
+            <div className="container py-5 text-center">
+                <p className="text-muted">Group not found</p>
+            </div>
+        );
+    }
 
     return (
         <div className="container py-5">
-            <nav aria-label="breadcrumb">
-                <ol className="breadcrumb">
-                    <li className="breadcrumb-item">
-                        <Link to="/dashboard">Groups</Link>
-                    </li>
-                    <li className="breadcrumb-item active">Expense Details</li>
-                </ol>
-            </nav>
+            <div className="row g-4">
 
-            <div className="bg-white p-5 rounded-4 shadow-sm text-center border">
-                <div className="mb-4">
-                    <i className="bi bi-wallet2 display-1 text-primary opacity-25"></i>
+                <div className="col-12">
+                    <GroupHeader group={group} />
                 </div>
-                <h2 className="fw-bold">Group Expense Manager</h2>
-                <p className="text-muted">
-                    Working with Group ID:{" "}
-                    <code className="bg-light px-2 rounded">{groupId}</code>
-                </p>
 
-                <hr className="my-5" />
-
-                <div className="alert alert-info d-inline-block px-5">
-                    <h5>🛠️ Student Assignment</h5>
-                    <p className="mb-0">Implement the following here:</p>
-                    <ul className="text-start mt-3">
-                        <li>
-                            Fetch and display group details (Name, Members).
-                        </li>
-                        <li>
-                            Show a list of past transactions for this group.
-                        </li>
-                        <li>
-                            Add a form to create a new expense with title,
-                            amount, and split logic.
-                        </li>
-                    </ul>
+                <div className="col-md-4">
+                    <ExpenseSummary
+                        summary={summary}
+                        onMemberSettled={handleMemberSettled}
+                        onSplitsUpdated={handleSplitsUpdated}
+                    />
                 </div>
+
+                <div className="col-md-8">
+                    <AddExpense
+                        group={group}
+                        onExpenseAdded={refreshExpenses}
+                    />
+                </div>
+
+                <div className="col-12">
+                    <ExpenseList expenses={expenses} />
+                </div>
+
+                <div className="col-12">
+                    <SettleGroup
+                        groupId={groupId}
+                        onSettled={refreshExpenses}
+                    />
+                </div>
+
             </div>
         </div>
     );

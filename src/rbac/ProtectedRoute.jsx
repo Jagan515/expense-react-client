@@ -4,11 +4,15 @@ import { Navigate } from "react-router-dom";
 function ProtectedRoute({ roles, children }) {
     const user = useSelector((state) => state.userDetails);
 
-    if (roles.includes(user?.role)) {
-        return children;
+    if (!user) {
+        return <Navigate to="/login" />;
     }
 
-    return <Navigate to="/unauthorized-access" />;
+    if (!roles.includes(user.role)) {
+        return <Navigate to="/unauthorized-access" />;
+    }
+
+    return children;
 }
 
 export default ProtectedRoute;
