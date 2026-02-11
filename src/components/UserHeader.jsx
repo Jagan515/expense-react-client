@@ -10,7 +10,7 @@ function UserHeader() {
 
                 {/* Brand */}
                 <Link className="navbar-brand fw-bold text-primary" to="/dashboard">
-                     <span className="text-primary">Merge</span>Money
+                    <span className="text-primary">Merge</span>Money
                 </Link>
 
                 {/* Mobile toggle */}
@@ -26,31 +26,37 @@ function UserHeader() {
                     <span className="navbar-toggler-icon" />
                 </button>
 
-                {/* Navbar content */}
                 <div className="collapse navbar-collapse" id="navbarSupportedContent">
 
                     {/* Left links */}
                     <ul className="navbar-nav me-auto mb-2 mb-lg-0 gap-lg-2">
+
                         <li className="nav-item">
                             <Link className="nav-link fw-medium" to="/dashboard">
                                 Dashboard
                             </Link>
                         </li>
 
-                        <Link className="nav-link fw-medium" to="/manage-payments">
-  Payments & Subscriptions
-</Link>
+                        {/* Manage Credits */}
+                        <li className="nav-item">
+                            <Link className="nav-link fw-medium" to="/manage-payments">
+                                Manage Credits
+                            </Link>
+                        </li>
 
-
-                
-
-
+                        {/* Manage Subscription */}
+                        <li className="nav-item">
+                            <Link className="nav-link fw-medium" to="/manage-subscription">
+                                Manage Subscriptions
+                            </Link>
+                        </li>
 
                         <li className="nav-item">
                             <Link className="nav-link fw-medium" to="/groups">
                                 My Groups
                             </Link>
                         </li>
+
                     </ul>
 
                     {/* Right links */}

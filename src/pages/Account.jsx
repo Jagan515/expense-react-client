@@ -2,12 +2,18 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+
 
 import { serverEndpoint } from "../config/appConfig";
 import Loading from "../components/Loading";
+import { SET_USER } from "/src/redux/user/action";
+
 
 function Account() {
     const authUser = useSelector((state) => state.userDetails);
+    const dispatch = useDispatch();
+
 
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -56,31 +62,43 @@ function Account() {
     }, [error, success]);
 
     const handleSaveName = async () => {
-        if (nameInput.trim().length < 3) {
-            setError("Name must be at least 3 characters");
-            return;
-        }
+    if (nameInput.trim().length < 3) {
+        setError("Name must be at least 3 characters");
+        return;
+    }
 
-        try {
-            setSaving(true);
-            setError("");
+    try {
+        setSaving(true);
+        setError("");
 
-            const response = await axios.put(
-                `${serverEndpoint}/profile/update-name`,
-                { name: nameInput },
-                { withCredentials: true }
-            );
+        const response = await axios.put(
+            `${serverEndpoint}/profile/update-name`,
+            { name: nameInput },
+            { withCredentials: true }
+        );
 
-            setProfile(response.data.user);
-            setSuccess("Name updated successfully");
-            setIsEditingName(false);
-        } catch (err) {
-            console.error("Failed to update name:", err);
-            setError("Unable to update name");
-        } finally {
-            setSaving(false);
-        }
-    };
+        const updatedUser = response.data.user;
+
+       
+        setProfile(updatedUser);
+
+        
+        dispatch({
+            type: SET_USER,
+            payload: updatedUser,
+        });
+
+        setSuccess("Name updated successfully");
+        setIsEditingName(false);
+
+    } catch (err) {
+        console.error("Failed to update name:", err);
+        setError("Unable to update name");
+    } finally {
+        setSaving(false);
+    }
+};
+
 
     if (!authUser || loading) {
         return <Loading text="Loading account details..." />;

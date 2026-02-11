@@ -23,6 +23,8 @@ import Loading from "./components/Loading";
 import ProtectedRoute from "./rbac/ProtectedRoute";
 
 import { serverEndpoint } from "./config/appConfig";
+import ManageSubscription from "./pages/ManageSubscription";
+
 import { SET_USER, CLEAR_USER } from "./redux/user/action";
 
 const ROUTES = {
@@ -225,6 +227,21 @@ function App() {
                     )
                 }
             />
+            <Route
+                path="/manage-subscription"
+                element={
+                    userDetails ? (
+                        <ProtectedRoute roles={["admin"]}>
+                            <UserLayout>
+                                <ManageSubscription />
+                            </UserLayout>
+                        </ProtectedRoute>
+                    ) : (
+                        <Navigate to={ROUTES.LOGIN} />
+                    )
+                }
+            />
+
         </Routes>
     );
 }
