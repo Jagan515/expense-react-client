@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { serverEndpoint } from "../config/appConfig";
 
@@ -9,35 +9,44 @@ const CREDITS_PACK = [
 ];
 
 function ManagePayments() {
-  const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [userProfile, setUserProfile] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
+  const [userProfile, setUserProfile] = useState(null);
 
 
+  // Fetch Profile (Source of Truth)
 
-  const getUserProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     try {
       const response = await axios.get(
         `${serverEndpoint}/profile/get-user-info`,
         { withCredentials: true }
       );
+
       setUserProfile(response.data.user);
     } catch (error) {
-      
+      console.error(error);
       setErrors({ message: "Unable to fetch user profile" });
     } finally {
-      setLoading(false);
+      setProfileLoading(false);
     }
-  };
-
-  useEffect(() => {
-    getUserProfile();
   }, []);
 
-  const paymentResponseHandler = async (credits, payment) => {
+  useEffect(() => {
+    refreshProfile();
+  }, [refreshProfile]);
 
+  // -----------------------------
+  // Payment Verify Handler
+  // -----------------------------
+  const paymentResponseHandler = async (credits, payment) => {
     try {
+      setActionLoading(true);
+      setErrors({});
+      setSuccessMessage("");
+
       const response = await axios.post(
         `${serverEndpoint}/payments/verify-order`,
         {
@@ -45,25 +54,36 @@ function ManagePayments() {
           razorpay_payment_id: payment.razorpay_payment_id,
           razorpay_signature: payment.razorpay_signature,
           credits: credits,
-          
-          
         },
         { withCredentials: true }
       );
 
+      // Backend is source of truth
       setUserProfile(response.data.user);
+
+      setSuccessMessage(
+        `Payment successful. ${credits} credits have been added to your account.`
+      );
+
     } catch (error) {
       console.error(error);
       setErrors({
         message:
           "Unable to process payment request, contact customer service",
       });
+    } finally {
+      setActionLoading(false);
     }
   };
 
+  
+  // Create Order + Open Razorpay
+
   const handlePayment = async (credits) => {
     try {
-      setLoading(true);
+      setActionLoading(true);
+      setErrors({});
+      setSuccessMessage("");
 
       const orderResponse = await axios.post(
         `${serverEndpoint}/payments/create-order`,
@@ -72,7 +92,6 @@ function ManagePayments() {
       );
 
       const order = orderResponse.data.order;
-   
 
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
@@ -82,20 +101,24 @@ function ManagePayments() {
         description: `Order for purchasing ${credits} credits`,
         order_id: order.id,
         theme: { color: "#3399cc" },
-         handler: (response) => paymentResponseHandler(credits, response),
+        handler: (response) =>
+          paymentResponseHandler(credits, response),
       };
 
       const razorpay = new window.Razorpay(options);
       razorpay.open();
+
     } catch (error) {
       console.error(error);
       setErrors({ message: "Unable to process the payment request" });
-    } finally {
-      setLoading(false);
+      setActionLoading(false);
     }
   };
 
-  if (loading) {
+  // -----------------------------
+  // Initial Loading
+  // -----------------------------
+  if (profileLoading) {
     return (
       <div className="container p-5 text-center">
         <div className="spinner-border" role="status">
@@ -107,9 +130,16 @@ function ManagePayments() {
 
   return (
     <div className="container p-5">
+
       {errors.message && (
         <div className="alert alert-danger" role="alert">
           {errors.message}
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="alert alert-success" role="alert">
+          {successMessage}
         </div>
       )}
 
@@ -121,16 +151,18 @@ function ManagePayments() {
       </p>
 
       {CREDITS_PACK.map((credit, index) => (
-        <div key={index} className="col-auto border m-2 p-2">
+        <div key={index} className="col-auto border m-2 p-3 rounded">
           <h4>{credit.credits} Credits</h4>
           <p>
             Buy {credit.credits} Credits for INR {credit.price}
           </p>
+
           <button
             className="btn btn-outline-primary"
+            disabled={actionLoading}
             onClick={() => handlePayment(credit.credits)}
           >
-            Buy Now
+            {actionLoading ? "Processing..." : "Buy Now"}
           </button>
         </div>
       ))}
