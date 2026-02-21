@@ -9,6 +9,7 @@ function ProtectedRoute({ roles, children }) {
     }
 
     if (!roles.includes(user.role)) {
+        console.log("user role is not a admin")
         return <Navigate to="/unauthorized-access" />;
     }
 

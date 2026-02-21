@@ -16,8 +16,15 @@ function ExpenseItem({ expense }) {
                         </div>
                     </div>
 
-                    <div className="fw-bold text-primary fs-5">
-                        ₹{expense.amount}
+                    <div className="text-end">
+                        <div className="fw-bold text-primary fs-5">
+                            ₹{expense.amount}
+                        </div>
+                        {expense.category && (
+                            <span className="badge bg-secondary rounded-pill mt-1 opacity-75">
+                                {expense.category}
+                            </span>
+                        )}
                     </div>
                 </div>
 

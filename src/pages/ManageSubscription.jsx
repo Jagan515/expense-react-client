@@ -23,9 +23,9 @@ function ManageSubscription() {
   const [actionLoading, setActionLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
-  // -----------------------------
+
   // Fetch Profile (SOURCE OF TRUTH)
-  // -----------------------------
+
   const refreshProfile = useCallback(async () => {
     try {
       const response = await axios.get(
@@ -92,9 +92,9 @@ function ManageSubscription() {
     };
   }, [subscriptionStatus]);
 
-  // -----------------------------
+
   // CREATE SUBSCRIPTION
-  // -----------------------------
+
   const handleSubscribe = async (planName) => {
     try {
       setActionLoading(true);

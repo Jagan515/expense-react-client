@@ -112,6 +112,7 @@ function GroupExpenses() {
                 <div className="col-md-8">
                     <AddExpense
                         group={group}
+                        expenses={expenses}
                         onExpenseAdded={refreshExpenses}
                     />
                 </div>

@@ -8,6 +8,7 @@ import { serverEndpoint } from "../config/appConfig";
 import { SET_USER } from "../redux/user/action";
 
 function Login() {
+    
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -53,6 +54,7 @@ function Login() {
         } catch (err) {
             console.error("Login failed:", err);
             setError(
+                
                 err.response?.data?.error ||
                 "Login failed. Please try again."
             );

@@ -2,11 +2,21 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { serverEndpoint } from "../config/appConfig";
 
-function AddExpense({ group, onExpenseAdded }) {
+function AddExpense({ group, expenses = [], onExpenseAdded }) {
     const [amount, setAmount] = useState("");
+    const [category, setCategory] = useState("");
     const [selectedMembers, setSelectedMembers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+
+    // Derive unique categories from previous expenses
+    const suggestedCategories = [
+        ...new Set(
+            expenses
+                .map((e) => e.category)
+                .filter((cat) => cat && cat.trim() !== "")
+        )
+    ];
 
     // Reset selected members when group changes
     useEffect(() => {
@@ -26,7 +36,7 @@ function AddExpense({ group, onExpenseAdded }) {
         );
     };
 
-    const isValid = amount && selectedMembers.length > 0;
+    const isValid = amount && selectedMembers.length > 0 && category.trim().length > 0;
 
     const splitAmount = isValid
         ? Number(amount) / selectedMembers.length
@@ -34,7 +44,7 @@ function AddExpense({ group, onExpenseAdded }) {
 
     const handleAddExpense = async () => {
         if (!isValid) {
-            setError("Amount and at least one member are required");
+            setError("Amount, category, and at least one member are required");
             return;
         }
 
@@ -52,12 +62,14 @@ function AddExpense({ group, onExpenseAdded }) {
                 {
                     groupId: group._id,
                     amount: Number(amount),
+                    category: category.trim(),
                     splits,
                 },
                 { withCredentials: true }
             );
 
             setAmount("");
+            setCategory("");
             setSelectedMembers(group.membersEmail);
             onExpenseAdded?.();
         } catch (err) {
@@ -86,6 +98,25 @@ function AddExpense({ group, onExpenseAdded }) {
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
                     />
+                </div>
+
+                <div className="mb-3">
+                    <label className="form-label small fw-bold text-muted">
+                        Category
+                    </label>
+                    <input
+                        type="text"
+                        className="form-control bg-light border-0 px-3"
+                        placeholder="e.g. Food, Travel (select or type)"
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        list="category-suggestions"
+                    />
+                    <datalist id="category-suggestions">
+                        {suggestedCategories.map((cat, idx) => (
+                            <option key={idx} value={cat} />
+                        ))}
+                    </datalist>
                 </div>
 
                 <div className="mb-3">

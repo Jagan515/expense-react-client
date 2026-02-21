@@ -29,7 +29,7 @@ function ExpenseSummary({ summary, onMemberSettled, onSplitsUpdated }) {
     const handleSaveSplits = () => {
         const splits = members.map((email) => ({
             memberEmail: email,
-            amount: membersState[email].amount,
+            amount: Number(Number(membersState[email].amount).toFixed(2)),
             isSettled: membersState[email].isSettled
         }));
 
@@ -49,7 +49,7 @@ function ExpenseSummary({ summary, onMemberSettled, onSplitsUpdated }) {
                         </h5>
                         {members.length > 0 && (
                             <button
-                                className="btn btn-sm btn-outline-primary rounded-pill"
+                                className="btn btn-sm btn-outline-primary rounded-pill text-nowrap"
                                 onClick={() => setShowModal(true)}
                             >
                                 Adjust
@@ -59,15 +59,20 @@ function ExpenseSummary({ summary, onMemberSettled, onSplitsUpdated }) {
 
                     {/* Admin */}
                     {adminEmail && (
-                        <div className="mb-4 p-3 rounded-3 bg-primary bg-opacity-10">
-                            <div className="fw-bold text-primary mb-1">
-                                Admin (Paid upfront)
+                        <div className="mb-4 p-3 rounded-3 bg-primary bg-opacity-10 d-flex justify-content-between align-items-center">
+                            <div>
+                                <div className="fw-bold text-primary mb-1">
+                                    Admin (Paid upfront)
+                                </div>
+                                <div className="small text-muted">
+                                    {adminEmail}
+                                </div>
                             </div>
-                            <div className="small text-muted">
-                                {adminEmail}
-                            </div>
-                            <div className="fw-bold text-primary mt-2">
-                                ₹{membersState[adminEmail].amount} to receive
+                            <div className="text-end">
+                                <div className="fw-bold text-primary fs-5 mt-1">
+                                    ₹{Number(membersState[adminEmail].amount).toFixed(2)}
+                                </div>
+                                <div className="small text-primary fw-bold">to receive</div>
                             </div>
                         </div>
                     )}
@@ -93,16 +98,18 @@ function ExpenseSummary({ summary, onMemberSettled, onSplitsUpdated }) {
                                     </div>
 
                                     {amount === 0 ? (
-                                        <span className="badge bg-success rounded-pill">
-                                            Settled
-                                        </span>
+                                        <div className="text-end" style={{ minWidth: "180px" }}>
+                                            <span className="badge bg-success rounded-pill">
+                                                Settled
+                                            </span>
+                                        </div>
                                     ) : (
-                                        <div className="d-flex align-items-center gap-2">
-                                            <span className="fw-bold text-danger">
-                                                ₹{Math.abs(amount)}
+                                        <div className="d-flex align-items-center justify-content-end gap-3 text-end" style={{ minWidth: "180px" }}>
+                                            <span className="fw-bold text-danger text-nowrap">
+                                                ₹{Number(Math.abs(Number(amount))).toFixed(2)}
                                             </span>
                                             <button
-                                                className="btn btn-sm btn-outline-success rounded-pill"
+                                                className="btn btn-sm btn-outline-success rounded-pill text-nowrap"
                                                 onClick={() =>
                                                     handleSettleMember(email)
                                                 }
@@ -143,17 +150,16 @@ function ExpenseSummary({ summary, onMemberSettled, onSplitsUpdated }) {
                                         </span>
                                         <input
                                             type="number"
-                                            className="form-control form-control-sm w-25"
-                                            value={membersState[email].amount}
+                                            step="0.01"
+                                            className="form-control form-control-sm w-25 text-end"
+                                            value={membersState[email].amount.toFixed(2)}
                                             disabled={email === adminEmail}
                                             onChange={(e) =>
                                                 setMembersState((prev) => ({
                                                     ...prev,
                                                     [email]: {
                                                         ...prev[email],
-                                                        amount: Number(
-                                                            e.target.value
-                                                        )
+                                                        amount: e.target.value
                                                     }
                                                 }))
                                             }
