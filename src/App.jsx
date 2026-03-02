@@ -69,7 +69,12 @@ function App() {
                 const originalRequest = error.config;
 
                 // Handle 401 Unauthorized (Access Token Expired)
-                if (error.response?.status === 401 && !originalRequest._retry) {
+                // Exclude refresh token request itself to avoid infinite loops
+                if (
+                    error.response?.status === 401 &&
+                    !originalRequest._retry &&
+                    !originalRequest.url?.includes("/auth/refresh-token")
+                ) {
                     originalRequest._retry = true;
 
                     try {
@@ -82,6 +87,7 @@ function App() {
                         return axios(originalRequest);
                     } catch (refreshError) {
                         // Refresh token expired or invalid
+                        console.error("Refresh token failed, logging out...");
                         dispatch({ type: CLEAR_USER });
                         return Promise.reject(refreshError);
                     }
