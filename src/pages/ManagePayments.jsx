@@ -38,9 +38,8 @@ function ManagePayments() {
     refreshProfile();
   }, [refreshProfile]);
 
-  // -----------------------------
   // Payment Verify Handler
-  // -----------------------------
+ 
   const paymentResponseHandler = async (credits, payment) => {
     try {
       setActionLoading(true);
@@ -115,9 +114,9 @@ function ManagePayments() {
     }
   };
 
-  // -----------------------------
+
   // Initial Loading
-  // -----------------------------
+
   if (profileLoading) {
     return (
       <div className="container p-5 text-center">

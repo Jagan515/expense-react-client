@@ -62,7 +62,40 @@ function App() {
     };
 
     useEffect(() => {
+        // Axios interceptor for automatic token refresh
+        const interceptor = axios.interceptors.response.use(
+            (response) => response,
+            async (error) => {
+                const originalRequest = error.config;
+
+                // Handle 401 Unauthorized (Access Token Expired)
+                if (error.response?.status === 401 && !originalRequest._retry) {
+                    originalRequest._retry = true;
+
+                    try {
+                        await axios.post(
+                            `${serverEndpoint}/auth/refresh-token`,
+                            {},
+                            { withCredentials: true }
+                        );
+                        // Retry original request
+                        return axios(originalRequest);
+                    } catch (refreshError) {
+                        // Refresh token expired or invalid
+                        dispatch({ type: CLEAR_USER });
+                        return Promise.reject(refreshError);
+                    }
+                }
+
+                return Promise.reject(error);
+            }
+        );
+
         checkAuthStatus();
+
+        return () => {
+            axios.interceptors.response.eject(interceptor);
+        };
     }, []);
 
     if (loading) {
