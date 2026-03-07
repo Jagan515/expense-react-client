@@ -24,8 +24,8 @@ function Groups() {
     const [showRemoveModal, setShowRemoveModal] = useState(false);
     const [activeGroup, setActiveGroup] = useState(null);
 
-    const fetchGroups = async (page = 1) => {
-        setLoading(true);
+    const fetchGroups = async (page = 1, silent = false) => {
+        if (!silent) setLoading(true);
 
         try {
             const response = await axios.get(
@@ -44,7 +44,7 @@ function Groups() {
 
     const handleGroupUpdateSuccess = (updatedGroup) => {
         setCurrentPage(1);
-        fetchGroups(1);
+        fetchGroups(1, true);
 
         if (activeGroup && updatedGroup?._id === activeGroup._id) {
             setActiveGroup(updatedGroup);
@@ -137,9 +137,8 @@ function Groups() {
                 {totalPages > 1 && (
                     <ul className="pagination mb-0">
                         <li
-                            className={`page-item ${
-                                currentPage === 1 ? "disabled" : ""
-                            }`}
+                            className={`page-item ${currentPage === 1 ? "disabled" : ""
+                                }`}
                         >
                             <button
                                 className="page-link"
@@ -154,9 +153,8 @@ function Groups() {
                         {[...Array(totalPages)].map((_, index) => (
                             <li
                                 key={index}
-                                className={`page-item ${
-                                    currentPage === index + 1 ? "active" : ""
-                                }`}
+                                className={`page-item ${currentPage === index + 1 ? "active" : ""
+                                    }`}
                             >
                                 <button
                                     className="page-link"
@@ -170,9 +168,8 @@ function Groups() {
                         ))}
 
                         <li
-                            className={`page-item ${
-                                currentPage === totalPages ? "disabled" : ""
-                            }`}
+                            className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                                }`}
                         >
                             <button
                                 className="page-link"

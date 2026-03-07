@@ -152,7 +152,7 @@ function ExpenseSummary({ summary, onMemberSettled, onSplitsUpdated }) {
                                             type="number"
                                             step="0.01"
                                             className="form-control form-control-sm w-25 text-end"
-                                            value={membersState[email].amount.toFixed(2)}
+                                            value={membersState[email].amount}
                                             disabled={email === adminEmail}
                                             onChange={(e) =>
                                                 setMembersState((prev) => ({
